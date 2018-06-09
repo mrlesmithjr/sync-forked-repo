@@ -6,16 +6,16 @@
 # changes, and then finally push the changes to the forked repo.
 
 # Defines the upstream repo this repo was forked from
-# Example: upstream="git@gitlab.com:mrlesmithjr/test-repo.git"
-upstream=""
+# Example: UPSTREAM="git@gitlab.com:mrlesmithjr/test-repo.git"
+UPSTREAM=""
 
 # Commit and push changes to fork
 function commit_changes() {
   git commit -m "upstream synced"
   git push
-  if [ $current_branch != "master" ]
+  if [ $CURRENT_BRANCH != "master" ]
   then
-    git checkout $current_branch
+    git checkout $CURRENT_BRANCH
   fi
 }
 
@@ -31,9 +31,9 @@ function stash_pop_changes() {
 
 # Sync upstream repo, merge changes, commit changes, and push changes to fork
 function sync_upstream() {
-  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
   git fetch upstream
-  if [ $current_branch != "master" ]
+  if [ $CURRENT_BRANCH != "master" ]
   then
     git checkout master
   fi
@@ -56,7 +56,7 @@ then
   commit_changes
   stash_pop_changes
 else
-  git remote add upstream $upstream
+  git remote add upstream $UPSTREAM
   stash_changes
   sync_upstream
   update_submodules
