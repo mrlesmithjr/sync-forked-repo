@@ -16,8 +16,16 @@ upstream=""
 
 ## Usage
 
+### Shell Script
+
 ```bash
 ./sync-repo.sh
+```
+
+### Python Script
+
+```bash
+python sync-repo.py
 ```
 
 ## License
