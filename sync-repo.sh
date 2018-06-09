@@ -16,6 +16,7 @@ function commit_changes() {
   if [ $CURRENT_BRANCH != "master" ]
   then
     git checkout $CURRENT_BRANCH
+    git rebase master
   fi
 }
 
