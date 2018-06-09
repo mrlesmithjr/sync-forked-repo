@@ -19,6 +19,16 @@ function commit_changes() {
   fi
 }
 
+# Stash any local changes to ensure no failures occur when checking out master
+function stash_changes() {
+  git stash
+}
+
+# Pop all stashed changes to ensure any existing changes are not lost
+function stash_pop_changes() {
+  git stash pop
+}
+
 # Sync upstream repo, merge changes, commit changes, and push changes to fork
 function sync_upstream() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
@@ -40,12 +50,16 @@ remote_repositories=$(git remote -v)
 echo $remote_repositories
 if [[ $remote_repositories =~ "upstream" ]]
 then
+  stash_changes
   sync_upstream
   update_submodules
   commit_changes
+  stash_pop_changes
 else
   git remote add upstream $upstream
+  stash_changes
   sync_upstream
   update_submodules
   commit_changes
+  stash_pop_changes
 fi
