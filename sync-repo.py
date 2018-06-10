@@ -12,10 +12,7 @@ the changes, and then finally push the changes to the forked repo.
 # pip install gitpython
 
 import os
-try:
-    from git import Repo
-except ImportError:
-    print("gitpython module not found: pip install GitPython")
+import sys
 
 # Defines the upstream repo this repo was forked from
 # Example: UPSTREAM="git@gitlab.com:mrlesmithjr/test-repo.git"
@@ -23,6 +20,19 @@ UPSTREAM = ""
 
 
 def main():
+    try:
+        from git import Repo
+    except ImportError as error:
+        # Output expected ImportErrors.
+        print(error.__class__.__name__ + ": " + error.message)
+        print("Please install GitPython module...")
+        sys.exit(0)
+    except Exception as exception:
+        # Output unexpected Exceptions.
+        print(exception, False)
+        print(error.__class__.__name__ + ": " + exception.message)
+        sys.exit(0)
+
     # Capturing current working directory
     repo_path = os.getcwd()
 
