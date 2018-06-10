@@ -104,7 +104,18 @@ def sync_upstream(repo, current_branch):
     print("Any changes from upstream/master merged.\n")
 
 
-def update_submodules():
+def untracked_files(repo):
+    """Capture any untracked files"""
+    print("Capturing any untracked files...\n")
+    _untracked_files = repo.untracked_files
+    if _untracked_files != []:
+        print("The following untracked files were found:")
+        print("%s\n" % _untracked_files)
+    else:
+        print("No untracked files were found.\n")
+
+
+def update_submodules(repo):
     """Update any git submodules used."""
     print("Updating submodules...\n")
     repo.git.submodule('update', '--init', '--recursive', '--remote')
