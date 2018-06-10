@@ -22,7 +22,22 @@ except ImportError:
 UPSTREAM = "git@gitlab.com:mrlesmithjr/test-repo.git"
 
 
-def commit_changes(current_branch):
+def main():
+    repo_path = os.getcwd()
+    repo = Repo(repo_path)
+    # Check to make sure that we are not working in a bare repo
+    assert not repo.bare
+    current_branch = repo.active_branch
+    repo_remotes(repo)
+    stash_changes(repo)
+    sync_upstream(repo, current_branch)
+    update_submodules(repo)
+    untracked_files(repo)
+    commit_changes(repo, current_branch)
+    stash_pop_changes(repo)
+
+
+def commit_changes(repo, current_branch):
     """Commit and push changes to fork."""
     try:
         print("Committing any new changes.\n")
@@ -40,7 +55,7 @@ def commit_changes(current_branch):
         repo.git.rebase('master')
 
 
-def repo_remotes():
+def repo_remotes(repo):
     """Check for existing upstream repository remote."""
     _repo_remotes = []
     for remote in repo.remotes:
@@ -54,7 +69,7 @@ def repo_remotes():
         print("upstream remote already found!\n")
 
 
-def stash_changes():
+def stash_changes(repo):
     """Stash local changes.
 
     Stash any local changes to ensure no failures occur when checking out
@@ -64,7 +79,7 @@ def stash_changes():
     repo.git.stash()
 
 
-def stash_pop_changes():
+def stash_pop_changes(repo):
     """Pop all stashed changes to ensure any existing changes are not lost."""
     try:
         print("Popping any stashed entries.\n")
@@ -73,7 +88,7 @@ def stash_pop_changes():
         print("No stash entries found.\n")
 
 
-def sync_upstream(current_branch):
+def sync_upstream(repo, current_branch):
     """Sync upstream parent repo.
 
     Sync upstream repo, merge changes, commit changes, and push changes to
@@ -97,12 +112,4 @@ def update_submodules():
 
 
 if __name__ == "__main__":
-    repo_path = os.getcwd()
-    repo = Repo(repo_path)
-    current_branch = repo.active_branch
-    repo_remotes()
-    stash_changes()
-    sync_upstream(current_branch)
-    update_submodules()
-    commit_changes(current_branch)
-    stash_pop_changes()
+    main()
