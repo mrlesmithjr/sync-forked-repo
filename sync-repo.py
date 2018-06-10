@@ -20,6 +20,7 @@ UPSTREAM = ""
 
 
 def main():
+    """Main function of execution."""
     try:
         from git import Repo
     except ImportError as error:
@@ -86,6 +87,7 @@ def commit_changes(repo, current_branch):
 
 
 def get_status(repo):
+    """Get status of local repo and check for changes."""
     changes = []
     for item in repo.index.diff(None):
         changes.append(item.a_path)
