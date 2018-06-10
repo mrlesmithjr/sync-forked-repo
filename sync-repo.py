@@ -19,7 +19,7 @@ except ImportError:
 
 # Defines the upstream repo this repo was forked from
 # Example: UPSTREAM="git@gitlab.com:mrlesmithjr/test-repo.git"
-UPSTREAM = "git@gitlab.com:mrlesmithjr/test-repo.git"
+UPSTREAM = ""
 
 
 def main():
