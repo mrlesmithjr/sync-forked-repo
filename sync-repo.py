@@ -23,18 +23,37 @@ UPSTREAM = ""
 
 
 def main():
+    # Capturing current working directory
     repo_path = os.getcwd()
+
+    # Defining repo based on current working directory
     repo = Repo(repo_path)
+
     # Check to make sure that we are not working in a bare repo
     assert not repo.bare
+
+    # Capturing current active branch
     current_branch = repo.active_branch
+
+    # Setting up repository remotes
     repo_remotes(repo)
+
     # Check for any changes and stash them before proceeding
     stashed_changes = stash_changes(repo)
+
+    # Syncing upstream with local repository
     sync_upstream(repo, current_branch)
+
+    # Updating and syncing any submodules being used
     update_submodules(repo)
-    untracked_files(repo)
+
+    # Capturing any untracked files in local repository. Future use cases..
+    untracked_files = repo.untracked_files
+
+    # Committing and pushing any changes from upstream to forked repo.
     commit_changes(repo, current_branch)
+
+    # Popping any stashed changes
     stash_pop_changes(repo, stashed_changes)
 
 
@@ -97,8 +116,6 @@ def stash_pop_changes(repo, stashed_changes):
     if stashed_changes is True:
         print("Popping any stashed entries.\n")
         repo.git.stash('pop')
-    else:
-        print("No stash entries found.\n")
 
 
 def sync_upstream(repo, current_branch):
@@ -115,17 +132,6 @@ def sync_upstream(repo, current_branch):
     print("Merging any changes from upstream/master...")
     repo.git.merge('upstream/master')
     print("Any changes from upstream/master merged.\n")
-
-
-def untracked_files(repo):
-    """Capture any untracked files"""
-    print("Capturing any untracked files...")
-    _untracked_files = repo.untracked_files
-    if _untracked_files != []:
-        print("The following untracked files were found:")
-        print("%s\n" % _untracked_files)
-    else:
-        print("No untracked files were found.\n")
 
 
 def update_submodules(repo):
