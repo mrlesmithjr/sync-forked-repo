@@ -29,30 +29,38 @@ def main():
     assert not repo.bare
     current_branch = repo.active_branch
     repo_remotes(repo)
-    stash_changes(repo)
+    # Check for any changes and stash them before proceeding
+    stashed_changes = stash_changes(repo)
     sync_upstream(repo, current_branch)
     update_submodules(repo)
     untracked_files(repo)
     commit_changes(repo, current_branch)
-    stash_pop_changes(repo)
+    stash_pop_changes(repo, stashed_changes)
 
 
 def commit_changes(repo, current_branch):
     """Commit and push changes to fork."""
     try:
-        print("Committing any new changes.\n")
+        print("Committing any new changes...")
         repo.git.commit('-m', '"upstream synced"')
         print("Any new changes have been committed.\n")
     except:
         print("No changes have been found to commit.\n")
-    print("Pushing any new changes to forked repo.\n")
+    print("Pushing any new changes to forked repo...")
     repo.git.push()
     print("All new changes have been pushed to forked repo.\n")
     if current_branch.name != "master":
-        print("Checking out original branch: %s\n" % current_branch.name)
+        print("Checking out original branch: %s..." % current_branch.name)
         repo.git.checkout(current_branch.name)
         print("Rebasing with local master to include any changes.\n")
         repo.git.rebase('master')
+
+
+def get_status(repo):
+    changes = []
+    for item in repo.index.diff(None):
+        changes.append(item.a_path)
+    return changes
 
 
 def repo_remotes(repo):
@@ -60,13 +68,10 @@ def repo_remotes(repo):
     _repo_remotes = []
     for remote in repo.remotes:
         _repo_remotes.append(remote.name)
-    print("The following repo remotes were found: %s\n" % _repo_remotes)
     if "upstream" not in _repo_remotes:
         print("upstream remote not found. Adding...\n")
         repo.create_remote("upstream", UPSTREAM)
         print("upstream remote added successfully.\n")
-    else:
-        print("upstream remote already found!\n")
 
 
 def stash_changes(repo):
@@ -75,16 +80,24 @@ def stash_changes(repo):
     Stash any local changes to ensure no failures occur when checking out
     master.
     """
-    print("Stashing any uncommitted entries.\n")
-    repo.git.stash()
+    print("Checking status of repo changes..")
+    changes = get_status(repo)
+    if changes != []:
+        print("Stashing any uncommitted entries.\n")
+        repo.git.stash()
+        stashed_changes = True
+    else:
+        print("No uncommitted entries found.\n")
+        stashed_changes = False
+    return stashed_changes
 
 
-def stash_pop_changes(repo):
+def stash_pop_changes(repo, stashed_changes):
     """Pop all stashed changes to ensure any existing changes are not lost."""
-    try:
+    if stashed_changes is True:
         print("Popping any stashed entries.\n")
         repo.git.stash('pop')
-    except:
+    else:
         print("No stash entries found.\n")
 
 
@@ -96,17 +109,17 @@ def sync_upstream(repo, current_branch):
     """
     repo.git.fetch('upstream')
     if current_branch.name != "master":
-        print("Checking out master branch.\n")
+        print("Checking out master branch...")
         repo.git.checkout('master')
         print("master branch checked out.\n")
-    print("Merging any changes from upstream/master.\n")
+    print("Merging any changes from upstream/master...")
     repo.git.merge('upstream/master')
     print("Any changes from upstream/master merged.\n")
 
 
 def untracked_files(repo):
     """Capture any untracked files"""
-    print("Capturing any untracked files...\n")
+    print("Capturing any untracked files...")
     _untracked_files = repo.untracked_files
     if _untracked_files != []:
         print("The following untracked files were found:")
@@ -117,7 +130,7 @@ def untracked_files(repo):
 
 def update_submodules(repo):
     """Update any git submodules used."""
-    print("Updating submodules...\n")
+    print("Updating submodules...")
     repo.git.submodule('update', '--init', '--recursive', '--remote')
     print("Submodules updated...\n")
 
