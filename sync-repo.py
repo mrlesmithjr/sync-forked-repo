@@ -58,9 +58,6 @@ def main():
     # Updating and syncing any submodules being used
     update_submodules(repo)
 
-    # Capturing any untracked files in local repository. Future use cases..
-    untracked_files = repo.untracked_files
-
     # Committing and pushing any changes from upstream to forked repo.
     commit_changes(repo, current_branch)
 
@@ -88,6 +85,13 @@ def commit_changes(repo, current_branch):
 
 def get_status(repo):
     """Get status of local repo and check for changes."""
+    # Capturing any untracked files in local repository. Future use cases..
+    untracked_files = repo.untracked_files
+    if untracked_files != []:
+        print("The following untracked files were found and "
+              "should be committed: ")
+        for item in untracked_files:
+            print(item)
     changes = []
     for item in repo.index.diff(None):
         changes.append(item.a_path)
@@ -111,10 +115,10 @@ def stash_changes(repo):
     Stash any local changes to ensure no failures occur when checking out
     master.
     """
-    print("Checking status of repo changes..")
+    print("Checking status of repo changes..\n")
     changes = get_status(repo)
     if changes != []:
-        print("Stashing any uncommitted entries.\n")
+        print("\nStashing any uncommitted entries.\n")
         repo.git.stash()
         stashed_changes = True
     else:
