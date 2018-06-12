@@ -77,7 +77,7 @@ def commit_changes(repo, current_branch):
     repo.git.push()
     print("All new changes have been pushed to forked repo.\n")
     if current_branch.name != "master":
-        print("Checking out original branch: %s..." % current_branch.name)
+        print("Checking out original branch: " + current_branch.name)
         repo.git.checkout(current_branch.name)
         print("Rebasing with local master to include any changes.\n")
         repo.git.rebase('master')
