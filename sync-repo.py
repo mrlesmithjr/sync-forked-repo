@@ -158,6 +158,7 @@ def sync_upstream(repo, current_branch):
 
 
 def tagging(repo):
+    """Create automatic tagging based on timestamp when commits are made."""
     tags = repo.tags
     if tags != []:
         print("The following tags were found: ")
