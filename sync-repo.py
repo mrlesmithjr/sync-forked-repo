@@ -11,6 +11,7 @@ the changes, and then finally push the changes to the forked repo.
 # Requirements:
 # pip install gitpython
 
+import datetime
 import os
 import sys
 
@@ -71,13 +72,16 @@ def commit_changes(repo, current_branch):
         print("Committing any new changes...")
         repo.git.commit('-m', '"upstream synced"')
         print("Any new changes have been committed.\n")
+        tagging(repo)
     except:
         print("No changes have been found to commit.\n")
     print("Pushing any new changes to forked repo...")
     repo.git.push()
     print("All new changes have been pushed to forked repo.\n")
+    print("Pushing any tags.\n")
+    repo.git.push('--tags')
     if current_branch.name != "master":
-        print("Checking out original branch: %s..." % current_branch.name)
+        print("Checking out original branch: " + current_branch.name)
         repo.git.checkout(current_branch.name)
         print("Rebasing with local master to include any changes.\n")
         repo.git.rebase('master')
@@ -104,9 +108,15 @@ def repo_remotes(repo):
     for remote in repo.remotes:
         _repo_remotes.append(remote.name)
     if "upstream" not in _repo_remotes:
-        print("upstream remote not found. Adding...\n")
+        print("upstream remote not found. Adding...")
         repo.create_remote("upstream", UPSTREAM)
         print("upstream remote added successfully.\n")
+    else:
+        if repo.remotes.upstream.url != UPSTREAM:
+            print("upstream remote found but not correct. Changing...")
+            repo.delete_remote("upstream")
+            repo.create_remote("upstream", UPSTREAM)
+            print("upstream remote successfully changed.\n")
 
 
 def stash_changes(repo):
@@ -118,12 +128,15 @@ def stash_changes(repo):
     print("Checking status of repo changes..\n")
     changes = get_status(repo)
     if changes != []:
-        print("\nStashing any uncommitted entries.\n")
+        print("\nStashing the following uncommitted entries:")
+        for item in changes:
+            print(item)
         repo.git.stash()
         stashed_changes = True
     else:
-        print("No uncommitted entries found.\n")
+        print("No uncommitted entries found.")
         stashed_changes = False
+    print("\n")
     return stashed_changes
 
 
@@ -148,6 +161,20 @@ def sync_upstream(repo, current_branch):
     print("Merging any changes from upstream/master...")
     repo.git.merge('upstream/master')
     print("Any changes from upstream/master merged.\n")
+
+
+def tagging(repo):
+    """Create automatic tagging based on timestamp when commits are made."""
+    tags = repo.tags
+    if tags != []:
+        print("The following tags were found: ")
+        for tag in tags:
+            print(tag)
+        print("\n")
+    tag = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    print("Creating new tag: " + tag)
+    repo.create_tag(tag, message='Automatic tag created on: %s' % tag)
+    print("\n")
 
 
 def update_submodules(repo):
