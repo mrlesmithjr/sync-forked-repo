@@ -118,12 +118,15 @@ def stash_changes(repo):
     print("Checking status of repo changes..\n")
     changes = get_status(repo)
     if changes != []:
-        print("\nStashing any uncommitted entries.\n")
+        print("\nStashing the following uncommitted entries:")
+        for item in changes:
+            print(item)
         repo.git.stash()
         stashed_changes = True
     else:
-        print("No uncommitted entries found.\n")
+        print("No uncommitted entries found.")
         stashed_changes = False
+    print("\n")
     return stashed_changes
 
 
