@@ -108,9 +108,15 @@ def repo_remotes(repo):
     for remote in repo.remotes:
         _repo_remotes.append(remote.name)
     if "upstream" not in _repo_remotes:
-        print("upstream remote not found. Adding...\n")
+        print("upstream remote not found. Adding...")
         repo.create_remote("upstream", UPSTREAM)
         print("upstream remote added successfully.\n")
+    else:
+        if repo.remotes.upstream.url != UPSTREAM:
+            print("upstream remote found but not correct. Changing...")
+            repo.delete_remote("upstream")
+            repo.create_remote("upstream", UPSTREAM)
+            print("upstream remote successfully changed.\n")
 
 
 def stash_changes(repo):
