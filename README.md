@@ -16,12 +16,6 @@ upstream=""
 
 ## Usage
 
-### Shell Script
-
-```bash
-./sync-repo.sh
-```
-
 ### Python Script
 
 ```bash
