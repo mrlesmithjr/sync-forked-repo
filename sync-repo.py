@@ -39,7 +39,7 @@ def main():
     repo_path = os.getcwd()
 
     # Defining repo based on current working directory
-    repo = Repo(repo_path)
+    repo = Repo(repo_path, search_parent_directories=True)
 
     # Check to make sure that we are not working in a bare repo
     assert not repo.bare
