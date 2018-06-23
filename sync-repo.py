@@ -183,7 +183,8 @@ def update_submodules(repo):
     submodules = repo.submodules
     if len(submodules) > 0:
         print("Updating submodules...")
-        repo.git.submodule('update', '--init', '--recursive', '--remote')
+        # repo.git.submodule('update', '--init', '--recursive', '--remote')
+        repo.git.submodule('update')
         print("Submodules updated...\n")
     else:
         print("No submodules found.\n")
