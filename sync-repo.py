@@ -179,9 +179,14 @@ def tagging(repo):
 
 def update_submodules(repo):
     """Update any git submodules used."""
-    print("Updating submodules...")
-    repo.git.submodule('update', '--init', '--recursive', '--remote')
-    print("Submodules updated...\n")
+    print("Gathering all submodules...")
+    submodules = repo.submodules
+    if len(submodules) > 0:
+        print("Updating submodules...")
+        repo.git.submodule('update', '--init', '--recursive', '--remote')
+        print("Submodules updated...\n")
+    else:
+        print("No submodules found.\n")
 
 
 if __name__ == "__main__":
