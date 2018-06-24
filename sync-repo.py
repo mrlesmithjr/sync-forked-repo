@@ -62,7 +62,7 @@ def main():
         sync_upstream(repo, current_branch)
 
         # Updating and syncing any submodules being used
-        update_submodules(repo)
+        update_submodules(repo, repo_path, Repo)
 
         # Committing and pushing any changes from upstream to forked repo.
         commit_changes(repo, current_branch)
@@ -194,15 +194,39 @@ def tagging(repo):
     print("\n")
 
 
-def update_submodules(repo):
+def update_submodules(repo, repo_path, Repo):
     """Update any git submodules used."""
     print("Gathering all submodules...")
-    submodules = repo.submodules
-    if len(submodules) > 0:
-        print("Updating submodules...")
-        # repo.git.submodule('update', '--init', '--recursive', '--remote')
-        repo.git.submodule('update')
-        print("Submodules updated...\n")
+    # Collect any submodules in use
+    sms = repo.submodules
+    # Ensure that there are actually submodules in use
+    if len(sms) > 0:
+        # Iterate over each submodule found
+        for sm in sms:
+            # Define submodule actual path
+            sm_path = repo_path + "/" + sm.path
+            # Define submodule repo
+            sm_repo = Repo(sm_path)
+            # Check for any changed files
+            sm_changed_files = sm_repo.index.diff(None)
+            if sm_changed_files != []:
+                print("Stashing changed files found in submodule: %s" % sm.name)
+                # Stash any changed files found in submodule
+                sm_repo.git.stash()
+                sm_stashed_files = True
+            else:
+                sm_stashed_files = False
+            # Collect any untracked files in submodule
+            sm_untracked_files = sm_repo.untracked_files
+            if sm_untracked_files != []:
+                print("The following untracked files found in submodule: %s"
+                % sm_untracked_files)
+            # Update the submodule
+            sm_repo.submodule_update()
+            if sm_stashed_files:
+                print("Popping stashed files found in submodule: %s" % sm.name)
+                # Pop any stashed files found in submodule
+                sm_repo.git.stash('pop')
     else:
         print("No submodules found.\n")
 
