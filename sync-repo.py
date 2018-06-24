@@ -104,10 +104,10 @@ def get_status(repo):
 
 def repo_remotes(repo):
     """Check for existing upstream repository remote."""
-    _repo_remotes = []
+    remotes = []
     for remote in repo.remotes:
-        _repo_remotes.append(remote.name)
-    if "upstream" not in _repo_remotes:
+        remotes.append(remote.name)
+    if "upstream" not in remotes:
         print("upstream remote not found. Adding...")
         repo.create_remote("upstream", UPSTREAM)
         print("upstream remote added successfully.\n")
