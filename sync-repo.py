@@ -50,20 +50,38 @@ def main():
     # Setting up repository remotes
     repo_remotes(repo)
 
-    # Check for any changes and stash them before proceeding
-    stashed_changes = stash_changes(repo)
+    # Check for any upstream changes
+    upstream_changes = check_upstream_changes(repo)
 
-    # Syncing upstream with local repository
-    sync_upstream(repo, current_branch)
+    if upstream_changes:
 
-    # Updating and syncing any submodules being used
-    update_submodules(repo)
+        # Check for any changes and stash them before proceeding
+        stashed_changes = stash_changes(repo)
 
-    # Committing and pushing any changes from upstream to forked repo.
-    commit_changes(repo, current_branch)
+        # Syncing upstream with local repository
+        sync_upstream(repo, current_branch)
 
-    # Popping any stashed changes
-    stash_pop_changes(repo, stashed_changes)
+        # Updating and syncing any submodules being used
+        update_submodules(repo)
+
+        # Committing and pushing any changes from upstream to forked repo.
+        commit_changes(repo, current_branch)
+
+        # Popping any stashed changes
+        stash_pop_changes(repo, stashed_changes)
+
+    else:
+        print("No upstream changes found.\n")
+
+
+def check_upstream_changes(repo):
+    """Check for any upstream changes."""
+    fetch_upstream = repo.remotes.upstream.fetch()[0]
+    if fetch_upstream.flags == 4:
+        upstream_changes = False
+    else:
+        upstream_changes = True
+    return upstream_changes
 
 
 def commit_changes(repo, current_branch):
@@ -72,12 +90,12 @@ def commit_changes(repo, current_branch):
         print("Committing any new changes...")
         repo.git.commit('-m', '"upstream synced"')
         print("Any new changes have been committed.\n")
-        tagging(repo)
     except:
         print("No changes have been found to commit.\n")
     print("Pushing any new changes to forked repo...")
     repo.git.push()
     print("All new changes have been pushed to forked repo.\n")
+    tagging(repo)
     print("Pushing any tags.\n")
     repo.git.push('--tags')
     if current_branch.name != "master":
@@ -153,7 +171,6 @@ def sync_upstream(repo, current_branch):
     Sync upstream repo, merge changes, commit changes, and push changes to
     fork.
     """
-    repo.git.fetch('upstream')
     if current_branch.name != "master":
         print("Checking out master branch...")
         repo.git.checkout('master')
