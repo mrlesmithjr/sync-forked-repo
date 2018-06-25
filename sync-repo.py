@@ -98,9 +98,9 @@ def main():
         stash_pop_changes(logger, repo, stashed_changes)
 
     else:
-        logger.info("No upstream changes found.\n")
+        logger.info("No upstream changes found.")
     
-    logger.info('Finished\n')
+    logger.info('Finished')
 
 
 def check_upstream_changes(repo):
@@ -118,19 +118,19 @@ def commit_changes(logger, repo, current_branch):
     try:
         logger.info("Committing any new changes...")
         repo.git.commit('-m', '"upstream synced"')
-        logger.info("Any new changes have been committed.\n")
+        logger.info("Any new changes have been committed.")
     except:
-        logger.info("No changes have been found to commit.\n")
+        logger.info("No changes have been found to commit.")
     logger.info("Pushing any new changes to forked repo...")
     repo.git.push()
-    logger.info("All new changes have been pushed to forked repo.\n")
+    logger.info("All new changes have been pushed to forked repo.")
     tagging(logger, repo)
-    logger.info("Pushing any tags.\n")
+    logger.info("Pushing any tags.")
     repo.git.push('--tags')
     if current_branch.name != "master":
         logger.info("Checking out original branch: " + current_branch.name)
         repo.git.checkout(current_branch.name)
-        logger.info("Rebasing with local master to include any changes.\n")
+        logger.info("Rebasing with local master to include any changes.")
         repo.git.rebase('master')
 
 
@@ -157,13 +157,13 @@ def repo_remotes(logger, repo):
     if "upstream" not in remotes:
         logger.info("upstream remote not found. Adding...")
         repo.create_remote("upstream", UPSTREAM)
-        logger.info("upstream remote added successfully.\n")
+        logger.info("upstream remote added successfully.")
     else:
         if repo.remotes.upstream.url != UPSTREAM:
             logger.info("upstream remote found but not correct. Changing...")
             repo.delete_remote("upstream")
             repo.create_remote("upstream", UPSTREAM)
-            logger.info("upstream remote successfully changed.\n")
+            logger.info("upstream remote successfully changed.")
 
 
 def stash_changes(logger, repo):
@@ -172,10 +172,10 @@ def stash_changes(logger, repo):
     Stash any local changes to ensure no failures occur when checking out
     master.
     """
-    logger.info("Checking status of repo changes..\n")
+    logger.info("Checking status of repo changes..")
     changes = get_status(logger, repo)
     if changes != []:
-        logger.info("\nStashing the following uncommitted entries:")
+        logger.info("Stashing the following uncommitted entries:")
         for item in changes:
             logger.info(item)
         repo.git.stash()
@@ -183,14 +183,13 @@ def stash_changes(logger, repo):
     else:
         logger.info("No uncommitted entries found.")
         stashed_changes = False
-    logger.info("\n")
     return stashed_changes
 
 
 def stash_pop_changes(logger, repo, stashed_changes):
     """Pop all stashed changes to ensure any existing changes are not lost."""
     if stashed_changes is True:
-        logger.info("Popping any stashed entries.\n")
+        logger.info("Popping any stashed entries.")
         repo.git.stash('pop')
 
 
@@ -203,10 +202,10 @@ def sync_upstream(logger, repo, current_branch):
     if current_branch.name != "master":
         logger.info("Checking out master branch...")
         repo.git.checkout('master')
-        logger.info("master branch checked out.\n")
+        logger.info("master branch checked out.")
     logger.info("Merging any changes from upstream/master...")
     repo.git.merge('upstream/master')
-    logger.info("Any changes from upstream/master merged.\n")
+    logger.info("Any changes from upstream/master merged.")
 
 
 def tagging(logger, repo):
@@ -216,11 +215,9 @@ def tagging(logger, repo):
         logger.info("The following tags were found: ")
         for tag in tags:
             logger.info(tag)
-        logger.info("\n")
     tag = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     logger.info("Creating new tag: " + tag)
     repo.create_tag(tag, message='Automatic tag created on: %s' % tag)
-    logger.info("\n")
 
 
 def update_submodules(logger, repo, repo_path, Repo):
@@ -258,7 +255,7 @@ def update_submodules(logger, repo, repo_path, Repo):
                 # Pop any stashed files found in submodule
                 sm_repo.git.stash('pop')
     else:
-        logger.info("No submodules found.\n")
+        logger.info("No submodules found.")
 
 
 if __name__ == "__main__":
