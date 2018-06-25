@@ -94,6 +94,8 @@ def main():
         # Popping any stashed changes
         stash_pop_changes(logger, repo, stashed_changes)
 
+    else:
+        logger.info("No origin changes found.")
 
     # Check for any upstream changes
     upstream_changes = check_upstream_changes(repo)
