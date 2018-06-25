@@ -254,8 +254,8 @@ def sync_upstream(logger, repo, current_branch):
         logger.info("Checking out %s branch..." % UPSTREAM_BRANCH)
         repo.git.checkout(UPSTREAM_BRANCH)
         logger.info("%s branch checked out." % UPSTREAM_BRANCH)
-    logger.info("Rebasing with upstream/%s..." % UPSTREAM_BRANCH)
-    repo.git.rebase('upstream/%s' % UPSTREAM_BRANCH)
+    logger.info("Merging with upstream/%s..." % UPSTREAM_BRANCH)
+    repo.git.merge('upstream/%s' % UPSTREAM_BRANCH)
     logger.info("Any changes from upstream/%s merged." % UPSTREAM_BRANCH)
 
 
