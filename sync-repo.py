@@ -12,8 +12,12 @@ the changes, and then finally push the changes to the forked repo.
 # pip install gitpython
 
 import datetime
+import logging
 import os
 import sys
+
+# Defines the log file name and location of where to log to
+LOG_FILE = "sync-repo.log"
 
 # Defines the upstream repo this repo was forked from
 # Example: UPSTREAM="git@gitlab.com:mrlesmithjr/test-repo.git"
@@ -22,17 +26,40 @@ UPSTREAM = ""
 
 def main():
     """Main function of execution."""
+    # Defining different formats to use for logging output
+    console_logging_format = "%(levelname)s: %(message)s"
+    file_logging_format = "%(levelname)s: %(asctime)s: %(message)s"
+
+    # Configuring logger
+    logging.basicConfig(level=logging.INFO, format=console_logging_format)
+    logger = logging.getLogger()
+
+    # Creating file handler for output file
+    handler = logging.FileHandler(LOG_FILE)
+
+    # Configuring logging level for log file
+    handler.setLevel(logging.INFO)
+
+    # Configuring logging format for log file
+    formatter = logging.Formatter(file_logging_format)
+    handler.setFormatter(formatter)
+
+    # Adding handlers to the logger
+    logger.addHandler(handler)
+
+    logger.info('Started')
+
     try:
         from git import Repo
     except ImportError as error:
         # Output expected ImportErrors.
-        print(error.__class__.__name__ + ": " + error.message)
-        print("Please install GitPython module...")
+        logger.error(error.__class__.__name__ + ": " + error.message)
+        logger.error("Please install GitPython module...")
         sys.exit(0)
     except Exception as exception:
         # Output unexpected Exceptions.
-        print(exception, False)
-        print(error.__class__.__name__ + ": " + exception.message)
+        logger.exception(exception, False)
+        logger.exception(error.__class__.__name__ + ": " + exception.message)
         sys.exit(0)
 
     # Capturing current working directory
@@ -48,7 +75,7 @@ def main():
     current_branch = repo.active_branch
 
     # Setting up repository remotes
-    repo_remotes(repo)
+    repo_remotes(logger, repo)
 
     # Check for any upstream changes
     upstream_changes = check_upstream_changes(repo)
@@ -56,22 +83,24 @@ def main():
     if upstream_changes:
 
         # Check for any changes and stash them before proceeding
-        stashed_changes = stash_changes(repo)
+        stashed_changes = stash_changes(logger, repo)
 
         # Syncing upstream with local repository
-        sync_upstream(repo, current_branch)
+        sync_upstream(logger, repo, current_branch)
 
         # Updating and syncing any submodules being used
-        update_submodules(repo, repo_path, Repo)
+        update_submodules(logger, repo, repo_path, Repo)
 
         # Committing and pushing any changes from upstream to forked repo.
-        commit_changes(repo, current_branch)
+        commit_changes(logger, repo, current_branch)
 
         # Popping any stashed changes
-        stash_pop_changes(repo, stashed_changes)
+        stash_pop_changes(logger, repo, stashed_changes)
 
     else:
-        print("No upstream changes found.\n")
+        logger.info("No upstream changes found.\n")
+    
+    logger.info('Finished\n')
 
 
 def check_upstream_changes(repo):
@@ -84,119 +113,119 @@ def check_upstream_changes(repo):
     return upstream_changes
 
 
-def commit_changes(repo, current_branch):
+def commit_changes(logger, repo, current_branch):
     """Commit and push changes to fork."""
     try:
-        print("Committing any new changes...")
+        logger.info("Committing any new changes...")
         repo.git.commit('-m', '"upstream synced"')
-        print("Any new changes have been committed.\n")
+        logger.info("Any new changes have been committed.\n")
     except:
-        print("No changes have been found to commit.\n")
-    print("Pushing any new changes to forked repo...")
+        logger.info("No changes have been found to commit.\n")
+    logger.info("Pushing any new changes to forked repo...")
     repo.git.push()
-    print("All new changes have been pushed to forked repo.\n")
-    tagging(repo)
-    print("Pushing any tags.\n")
+    logger.info("All new changes have been pushed to forked repo.\n")
+    tagging(logger, repo)
+    logger.info("Pushing any tags.\n")
     repo.git.push('--tags')
     if current_branch.name != "master":
-        print("Checking out original branch: " + current_branch.name)
+        logger.info("Checking out original branch: " + current_branch.name)
         repo.git.checkout(current_branch.name)
-        print("Rebasing with local master to include any changes.\n")
+        logger.info("Rebasing with local master to include any changes.\n")
         repo.git.rebase('master')
 
 
-def get_status(repo):
+def get_status(logger, repo):
     """Get status of local repo and check for changes."""
     # Capturing any untracked files in local repository. Future use cases..
     untracked_files = repo.untracked_files
     if untracked_files != []:
-        print("The following untracked files were found and "
+        logger.info("The following untracked files were found and "
               "should be committed: ")
         for item in untracked_files:
-            print(item)
+            logger.info(item)
     changes = []
     for item in repo.index.diff(None):
         changes.append(item.a_path)
     return changes
 
 
-def repo_remotes(repo):
+def repo_remotes(logger, repo):
     """Check for existing upstream repository remote."""
     remotes = []
     for remote in repo.remotes:
         remotes.append(remote.name)
     if "upstream" not in remotes:
-        print("upstream remote not found. Adding...")
+        logger.info("upstream remote not found. Adding...")
         repo.create_remote("upstream", UPSTREAM)
-        print("upstream remote added successfully.\n")
+        logger.info("upstream remote added successfully.\n")
     else:
         if repo.remotes.upstream.url != UPSTREAM:
-            print("upstream remote found but not correct. Changing...")
+            logger.info("upstream remote found but not correct. Changing...")
             repo.delete_remote("upstream")
             repo.create_remote("upstream", UPSTREAM)
-            print("upstream remote successfully changed.\n")
+            logger.info("upstream remote successfully changed.\n")
 
 
-def stash_changes(repo):
+def stash_changes(logger, repo):
     """Stash local changes.
 
     Stash any local changes to ensure no failures occur when checking out
     master.
     """
-    print("Checking status of repo changes..\n")
-    changes = get_status(repo)
+    logger.info("Checking status of repo changes..\n")
+    changes = get_status(logger, repo)
     if changes != []:
-        print("\nStashing the following uncommitted entries:")
+        logger.info("\nStashing the following uncommitted entries:")
         for item in changes:
-            print(item)
+            logger.info(item)
         repo.git.stash()
         stashed_changes = True
     else:
-        print("No uncommitted entries found.")
+        logger.info("No uncommitted entries found.")
         stashed_changes = False
-    print("\n")
+    logger.info("\n")
     return stashed_changes
 
 
-def stash_pop_changes(repo, stashed_changes):
+def stash_pop_changes(logger, repo, stashed_changes):
     """Pop all stashed changes to ensure any existing changes are not lost."""
     if stashed_changes is True:
-        print("Popping any stashed entries.\n")
+        logger.info("Popping any stashed entries.\n")
         repo.git.stash('pop')
 
 
-def sync_upstream(repo, current_branch):
+def sync_upstream(logger, repo, current_branch):
     """Sync upstream parent repo.
 
     Sync upstream repo, merge changes, commit changes, and push changes to
     fork.
     """
     if current_branch.name != "master":
-        print("Checking out master branch...")
+        logger.info("Checking out master branch...")
         repo.git.checkout('master')
-        print("master branch checked out.\n")
-    print("Merging any changes from upstream/master...")
+        logger.info("master branch checked out.\n")
+    logger.info("Merging any changes from upstream/master...")
     repo.git.merge('upstream/master')
-    print("Any changes from upstream/master merged.\n")
+    logger.info("Any changes from upstream/master merged.\n")
 
 
-def tagging(repo):
+def tagging(logger, repo):
     """Create automatic tagging based on timestamp when commits are made."""
     tags = repo.tags
     if tags != []:
-        print("The following tags were found: ")
+        logger.info("The following tags were found: ")
         for tag in tags:
-            print(tag)
-        print("\n")
+            logger.info(tag)
+        logger.info("\n")
     tag = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    print("Creating new tag: " + tag)
+    logger.info("Creating new tag: " + tag)
     repo.create_tag(tag, message='Automatic tag created on: %s' % tag)
-    print("\n")
+    logger.info("\n")
 
 
-def update_submodules(repo, repo_path, Repo):
+def update_submodules(logger, repo, repo_path, Repo):
     """Update any git submodules used."""
-    print("Gathering all submodules...")
+    logger.info("Gathering all submodules...")
     # Collect any submodules in use
     sms = repo.submodules
     # Ensure that there are actually submodules in use
@@ -210,7 +239,7 @@ def update_submodules(repo, repo_path, Repo):
             # Check for any changed files
             sm_changed_files = sm_repo.index.diff(None)
             if sm_changed_files != []:
-                print("Stashing changed files found in submodule: %s" % sm.name)
+                logger.info("Stashing changed files found in submodule: %s" % sm.name)
                 # Stash any changed files found in submodule
                 sm_repo.git.stash()
                 sm_stashed_files = True
@@ -219,16 +248,17 @@ def update_submodules(repo, repo_path, Repo):
             # Collect any untracked files in submodule
             sm_untracked_files = sm_repo.untracked_files
             if sm_untracked_files != []:
-                print("The following untracked files found in submodule: %s"
+                logger.info("The following untracked files found in submodule: %s"
                 % sm_untracked_files)
             # Update the submodule
+            logger.info("Updating submodule: %s" % sm.name)
             sm_repo.submodule_update()
             if sm_stashed_files:
-                print("Popping stashed files found in submodule: %s" % sm.name)
+                logger.info("Popping stashed files found in submodule: %s" % sm.name)
                 # Pop any stashed files found in submodule
                 sm_repo.git.stash('pop')
     else:
-        print("No submodules found.\n")
+        logger.info("No submodules found.\n")
 
 
 if __name__ == "__main__":
