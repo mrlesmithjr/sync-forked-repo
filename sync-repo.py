@@ -84,6 +84,7 @@ def main():
     origin_changes = check_origin_changes(repo)
 
     if origin_changes:
+        logger.info("origin changes found.")
 
         # Check for any changes and stash them before proceeding
         stashed_changes = stash_changes(logger, repo)
