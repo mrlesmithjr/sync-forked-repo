@@ -23,6 +23,9 @@ LOG_FILE = "sync-repo.log"
 # Example: UPSTREAM="git@gitlab.com:mrlesmithjr/test-repo.git"
 UPSTREAM = ""
 
+# Defines the upstream branch to sync with. Important for those that are not
+# by default master.
+UPSTREAM_BRANCH = "master"
 
 def main():
     """Main function of execution."""
@@ -127,11 +130,11 @@ def commit_changes(logger, repo, current_branch):
     tagging(logger, repo)
     logger.info("Pushing any tags.")
     repo.git.push('--tags')
-    if current_branch.name != "master":
+    if current_branch.name != UPSTREAM_BRANCH:
         logger.info("Checking out original branch: " + current_branch.name)
         repo.git.checkout(current_branch.name)
-        logger.info("Rebasing with local master to include any changes.")
-        repo.git.rebase('master')
+        logger.info("Rebasing with local %s to include any changes." % UPSTREAM_BRANCH)
+        repo.git.rebase(UPSTREAM_BRANCH)
 
 
 def get_status(logger, repo):
@@ -170,7 +173,7 @@ def stash_changes(logger, repo):
     """Stash local changes.
 
     Stash any local changes to ensure no failures occur when checking out
-    master.
+    UPSTREAM_BRANCH.
     """
     logger.info("Checking status of repo changes..")
     changes = get_status(logger, repo)
@@ -199,13 +202,13 @@ def sync_upstream(logger, repo, current_branch):
     Sync upstream repo, merge changes, commit changes, and push changes to
     fork.
     """
-    if current_branch.name != "master":
-        logger.info("Checking out master branch...")
-        repo.git.checkout('master')
-        logger.info("master branch checked out.")
-    logger.info("Merging any changes from upstream/master...")
-    repo.git.merge('upstream/master')
-    logger.info("Any changes from upstream/master merged.")
+    if current_branch.name != UPSTREAM_BRANCH:
+        logger.info("Checking out %s branch..." % UPSTREAM_BRANCH)
+        repo.git.checkout(UPSTREAM_BRANCH)
+        logger.info("%s branch checked out." % UPSTREAM_BRANCH)
+    logger.info("Merging any changes from upstream/%s..." % UPSTREAM_BRANCH)
+    repo.git.merge('upstream/%s' % UPSTREAM_BRANCH)
+    logger.info("Any changes from upstream/%s merged." % UPSTREAM_BRANCH)
 
 
 def tagging(logger, repo):
