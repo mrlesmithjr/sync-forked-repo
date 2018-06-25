@@ -37,8 +37,22 @@ def main():
     logging.basicConfig(level=logging.INFO, format=console_logging_format)
     logger = logging.getLogger()
 
+    # Capture directory name of log file
+    LOG_FILE_DIR = os.path.dirname(LOG_FILE)
+
+    # Check if log file directory name is in the current folder
+    if os.path.isdir("./" + LOG_FILE_DIR):
+        LOG = "./" + LOG_FILE
+    # Check if log file directory name is in the parent folder
+    elif os.path.isdir("../" + LOG_FILE_DIR):
+        LOG = "../" + LOG_FILE
+    # Error out and exit if log file directory name is not found
+    else:
+        logging.error("%s not found, please fix LOG_FILE variable!" % LOG_FILE)
+        sys.exit(0)
+
     # Creating file handler for output file
-    handler = logging.FileHandler(LOG_FILE)
+    handler = logging.FileHandler(LOG)
 
     # Configuring logging level for log file
     handler.setLevel(logging.INFO)
