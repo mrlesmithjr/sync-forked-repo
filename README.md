@@ -12,11 +12,14 @@ well.
 
 ## Requirements
 
+Define `LOG_FILE` in script to reflect the location of the log file to use for
+logging. The default is set to `sync-repo.log`.
+
 Define `UPSTREAM` in script to reflect your respective upstream repo for your
 fork.
 
-Define `LOG_FILE` in script to reflect the location of the log file to use for
-logging. The default is set to `sync-repo.log`.
+Define `UPSTREAM_BRANCH` in script to reflect your respective upstream repo's
+branch to sync with.
 
 ```python
 # Defines the log file name and location of where to log to
@@ -25,6 +28,10 @@ LOG_FILE = "sync-repo.log"
 # Defines the upstream repo this repo was forked from
 # Example: UPSTREAM="git@gitlab.com:mrlesmithjr/test-repo.git"
 UPSTREAM = ""
+
+# Defines the upstream branch to sync with. Important for those that are not
+# by default master.
+UPSTREAM_BRANCH = "master"
 ```
 
 ## Usage
