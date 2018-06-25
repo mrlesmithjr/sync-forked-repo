@@ -80,6 +80,21 @@ def main():
     # Setting up repository remotes
     repo_remotes(logger, repo)
 
+    # Check for any origin changes
+    origin_changes = check_origin_changes(repo)
+
+    if origin_changes:
+
+        # Check for any changes and stash them before proceeding
+        stashed_changes = stash_changes(logger, repo)
+
+        # Syncing upstream with local repository
+        sync_origin(logger, repo, current_branch)
+
+        # Popping any stashed changes
+        stash_pop_changes(logger, repo, stashed_changes)
+
+
     # Check for any upstream changes
     upstream_changes = check_upstream_changes(repo)
 
@@ -104,6 +119,16 @@ def main():
         logger.info("No upstream changes found.")
     
     logger.info('Finished')
+
+def check_origin_changes(repo):
+    """Check for any upstream changes."""
+    origin = repo.remotes.origin
+    fetch_origin = origin.fetch()[0]
+    if fetch_origin.flags == 4:
+        origin_changes = False
+    else:
+        origin_changes = True
+    return origin_changes
 
 
 def check_upstream_changes(repo):
@@ -194,6 +219,26 @@ def stash_pop_changes(logger, repo, stashed_changes):
     if stashed_changes is True:
         logger.info("Popping any stashed entries.")
         repo.git.stash('pop')
+
+
+def sync_origin(logger, repo, current_branch):
+    """Sync origin forked repo.
+
+    Sync origin repo, merge changes, commit changes, and push changes to
+    fork.
+    """
+    if current_branch.name != UPSTREAM_BRANCH:
+        logger.info("Checking out %s branch..." % UPSTREAM_BRANCH)
+        repo.git.checkout(UPSTREAM_BRANCH)
+        logger.info("%s branch checked out." % UPSTREAM_BRANCH)
+    logger.info("Pulling changes from origin/%s..." % UPSTREAM_BRANCH)
+    origin = repo.remotes.origin
+    origin.pull()
+    logger.info("Any changes from upstream/%s pulled." % UPSTREAM_BRANCH)
+    if current_branch.name != UPSTREAM_BRANCH:
+        logger.info("Checking out original branch: %s" % current_branch.name)
+        repo.git.checkout(current_branch.name)
+        logger.info("Original branch: %s checked out." % current_branch.name)
 
 
 def sync_upstream(logger, repo, current_branch):
