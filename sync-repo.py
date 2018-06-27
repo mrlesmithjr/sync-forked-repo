@@ -314,11 +314,11 @@ def update_submodules(logger, repo, repo_path, Repo):
                 % sm_untracked_files)
             # Update the submodule
             logger.info("Updating submodule: %s" % sm.name)
-            sm_repo.submodule_update()
             if sm_stashed_files:
                 logger.info("Popping stashed files found in submodule: %s" % sm.name)
                 # Pop any stashed files found in submodule
                 sm_repo.git.stash('pop')
+        repo.git.submodule('update')
     else:
         logger.info("No submodules found.")
 
