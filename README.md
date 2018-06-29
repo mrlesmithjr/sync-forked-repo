@@ -74,6 +74,6 @@ MIT
 
 Larry Smith Jr.
 
-- [EverythingShouldBeVirtual](http://everythingshouldbevirtual.com)
-- [@mrlesmithjr](https://www.twitter.com/mrlesmithjr)
-- <mailto:mrlesmithjr@gmail.com>
+-   [EverythingShouldBeVirtual](http://everythingshouldbevirtual.com)
+-   [@mrlesmithjr](https://www.twitter.com/mrlesmithjr)
+-   <mailto:mrlesmithjr@gmail.com>

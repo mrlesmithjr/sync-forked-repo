@@ -18,8 +18,10 @@ import os
 import sys
 
 # Define the path to the desired sync.cfg to use. By defaults this is set to
-# account for using as a submodule to a project, therefore the path is to the parent.
-sync_config = "../sync.cfg"
+# account for using as a submodule to a project, therefore the path is to the
+# parent.
+SYNC_CONFIG = "../sync.cfg"
+
 
 def main():
     """Main function of execution."""
@@ -36,15 +38,15 @@ def main():
 
     parser = SafeConfigParser()
 
-    # Defines actual path to where sync_config should be found
-    sync_config_path = os.path.join(script_dir, sync_config)
+    # Defines actual path to where SYNC_CONFIG should be found
+    SYNC_CONFIG_PATH = os.path.join(script_dir, SYNC_CONFIG)
 
-    # Check to ensure sync_config exists.
-    if os.path.exists(sync_config_path):
-        parser.read(sync_config_path)
+    # Check to ensure SYNC_CONFIG exists.
+    if os.path.exists(SYNC_CONFIG_PATH):
+        parser.read(SYNC_CONFIG_PATH)
     else:
-        logger.error("Configuration %s missing, please fix sync_config path."
-            % sync_config_path)
+        logger.error("Configuration %s missing, please fix SYNC_CONFIG path."
+                     % SYNC_CONFIG_PATH)
         sys.exit(0)
 
     # Defines the log file name and location of where to log to
@@ -53,8 +55,8 @@ def main():
     # Defines the upstream repo this repo was forked from
     UPSTREAM = parser.get("defaults", "UPSTREAM")
 
-    # Defines the upstream branch to sync with. Important for those that are not
-    # by default master.
+    # Defines the upstream branch to sync with. Important for those that are
+    # not by default master.
     UPSTREAM_BRANCH = parser.get("defaults", "UPSTREAM_BRANCH")
 
     LOG = os.path.join(script_dir, LOG_FILE)
@@ -142,8 +144,9 @@ def main():
 
     else:
         logger.info("No upstream changes found.")
-    
+
     logger.info('Finished')
+
 
 def check_origin_changes(repo):
     """Check for any upstream changes."""
@@ -183,7 +186,8 @@ def commit_changes(logger, repo, current_branch, UPSTREAM_BRANCH):
     if current_branch.name != UPSTREAM_BRANCH:
         logger.info("Checking out original branch: " + current_branch.name)
         repo.git.checkout(current_branch.name)
-        logger.info("Rebasing with local %s to include any changes." % UPSTREAM_BRANCH)
+        logger.info("Rebasing with local %s to include any changes." %
+                    UPSTREAM_BRANCH)
         repo.git.rebase(UPSTREAM_BRANCH)
 
 
@@ -193,7 +197,7 @@ def get_status(logger, repo):
     untracked_files = repo.untracked_files
     if untracked_files != []:
         logger.info("The following untracked files were found and "
-              "should be committed: ")
+                    "should be committed: ")
         for item in untracked_files:
             logger.info(item)
     changes = []
@@ -309,7 +313,8 @@ def update_submodules(logger, repo, repo_path, Repo):
             # Check for any changed files
             sm_changed_files = sm_repo.index.diff(None)
             if sm_changed_files != []:
-                logger.info("Stashing changed files found in submodule: %s" % sm.name)
+                logger.info(
+                    "Stashing changed files found in submodule: %s" % sm.name)
                 # Stash any changed files found in submodule
                 sm_repo.git.stash()
                 sm_stashed_files = True
@@ -318,12 +323,13 @@ def update_submodules(logger, repo, repo_path, Repo):
             # Collect any untracked files in submodule
             sm_untracked_files = sm_repo.untracked_files
             if sm_untracked_files != []:
-                logger.info("The following untracked files found in submodule: %s"
-                % sm_untracked_files)
+                logger.info("The following untracked files found in "
+                            "submodule: %s" % sm_untracked_files)
             # Update the submodule
             logger.info("Updating submodule: %s" % sm.name)
             if sm_stashed_files:
-                logger.info("Popping stashed files found in submodule: %s" % sm.name)
+                logger.info(
+                    "Popping stashed files found in submodule: %s" % sm.name)
                 # Pop any stashed files found in submodule
                 sm_repo.git.stash('pop')
         repo.git.submodule('update')
