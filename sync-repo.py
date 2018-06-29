@@ -17,8 +17,9 @@ import logging
 import os
 import sys
 
-# Define the path to the desired sync.cfg to use
-sync_config = "sync.cfg"
+# Define the path to the desired sync.cfg to use. By defaults this is set to
+# account for using as a submodule to a project, therefore the path is to the parent.
+sync_config = "../sync.cfg"
 
 def main():
     """Main function of execution."""
