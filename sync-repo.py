@@ -11,21 +11,14 @@ the changes, and then finally push the changes to the forked repo.
 # Requirements:
 # pip install gitpython
 
+from ConfigParser import SafeConfigParser
 import datetime
 import logging
 import os
 import sys
 
-# Defines the log file name and location of where to log to
-LOG_FILE = "sync-repo.log"
-
-# Defines the upstream repo this repo was forked from
-# Example: UPSTREAM="git@gitlab.com:mrlesmithjr/test-repo.git"
-UPSTREAM = ""
-
-# Defines the upstream branch to sync with. Important for those that are not
-# by default master.
-UPSTREAM_BRANCH = "master"
+# Define the path to the desired sync.cfg to use
+sync_config = "sync.cfg"
 
 def main():
     """Main function of execution."""
@@ -37,19 +30,30 @@ def main():
     logging.basicConfig(level=logging.INFO, format=console_logging_format)
     logger = logging.getLogger()
 
-    # Capture directory name of log file
-    LOG_FILE_DIR = os.path.dirname(LOG_FILE)
+    # Defines the path from where the script was executed from
+    script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # Check if log file directory name is in the current folder
-    if os.path.isdir("./" + LOG_FILE_DIR):
-        LOG = "./" + LOG_FILE
-    # Check if log file directory name is in the parent folder
-    elif os.path.isdir("../" + LOG_FILE_DIR):
-        LOG = "../" + LOG_FILE
-    # Error out and exit if log file directory name is not found
+    parser = SafeConfigParser()
+
+    # Check to ensure sync_config exists.
+    if os.path.exists(os.path.join(script_dir, sync_config)):
+        parser.read(os.path.join(script_dir, sync_config))
     else:
-        logging.error("%s not found, please fix LOG_FILE variable!" % LOG_FILE)
+        logger.error("Configuration %s missing, please fix sync_config path."
+            % os.path.join(script_dir, sync_config))
         sys.exit(0)
+
+    # Defines the log file name and location of where to log to
+    LOG_FILE = parser.get("defaults", "LOG_FILE")
+
+    # Defines the upstream repo this repo was forked from
+    UPSTREAM = parser.get("defaults", "UPSTREAM")
+
+    # Defines the upstream branch to sync with. Important for those that are not
+    # by default master.
+    UPSTREAM_BRANCH = parser.get("defaults", "UPSTREAM_BRANCH")
+
+    LOG = os.path.join(script_dir, LOG_FILE)
 
     # Creating file handler for output file
     handler = logging.FileHandler(LOG)
@@ -92,7 +96,7 @@ def main():
     current_branch = repo.active_branch
 
     # Setting up repository remotes
-    repo_remotes(logger, repo)
+    repo_remotes(logger, repo, UPSTREAM)
 
     # Check for any origin changes
     origin_changes = check_origin_changes(repo)
@@ -104,7 +108,7 @@ def main():
         stashed_changes = stash_changes(logger, repo)
 
         # Syncing upstream with local repository
-        sync_origin(logger, repo, current_branch)
+        sync_origin(logger, repo, current_branch, UPSTREAM_BRANCH)
 
         # Popping any stashed changes
         stash_pop_changes(logger, repo, stashed_changes)
@@ -121,13 +125,13 @@ def main():
         stashed_changes = stash_changes(logger, repo)
 
         # Syncing upstream with local repository
-        sync_upstream(logger, repo, current_branch)
+        sync_upstream(logger, repo, current_branch, UPSTREAM_BRANCH)
 
         # Updating and syncing any submodules being used
         update_submodules(logger, repo, repo_path, Repo)
 
         # Committing and pushing any changes from upstream to forked repo.
-        commit_changes(logger, repo, current_branch)
+        commit_changes(logger, repo, current_branch, UPSTREAM_BRANCH)
 
         # Popping any stashed changes
         stash_pop_changes(logger, repo, stashed_changes)
@@ -158,7 +162,7 @@ def check_upstream_changes(repo):
     return upstream_changes
 
 
-def commit_changes(logger, repo, current_branch):
+def commit_changes(logger, repo, current_branch, UPSTREAM_BRANCH):
     """Commit and push changes to fork."""
     try:
         logger.info("Committing any new changes...")
@@ -194,7 +198,7 @@ def get_status(logger, repo):
     return changes
 
 
-def repo_remotes(logger, repo):
+def repo_remotes(logger, repo, UPSTREAM):
     """Check for existing upstream repository remote."""
     remotes = []
     for remote in repo.remotes:
@@ -238,7 +242,7 @@ def stash_pop_changes(logger, repo, stashed_changes):
         repo.git.stash('pop')
 
 
-def sync_origin(logger, repo, current_branch):
+def sync_origin(logger, repo, current_branch, UPSTREAM_BRANCH):
     """Sync origin forked repo.
 
     Sync origin repo, merge changes, commit changes, and push changes to
@@ -258,7 +262,7 @@ def sync_origin(logger, repo, current_branch):
         logger.info("Original branch: %s checked out." % current_branch.name)
 
 
-def sync_upstream(logger, repo, current_branch):
+def sync_upstream(logger, repo, current_branch, UPSTREAM_BRANCH):
     """Sync upstream parent repo.
 
     Sync upstream repo, merge changes, commit changes, and push changes to

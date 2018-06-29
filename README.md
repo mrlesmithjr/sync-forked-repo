@@ -12,26 +12,42 @@ well.
 
 ## Requirements
 
-Define `LOG_FILE` in script to reflect the location of the log file to use for
-logging. The default is set to `sync-repo.log`.
+### Configure `sync.cfg` In Script
 
-Define `UPSTREAM` in script to reflect your respective upstream repo for your
-fork.
-
-Define `UPSTREAM_BRANCH` in script to reflect your respective upstream repo's
-branch to sync with.
+If your intention is to use a `sync.cfg` from a different location than the default,
+you must set the path appropriately.
 
 ```python
-# Defines the log file name and location of where to log to
-LOG_FILE = "sync-repo.log"
+sync_config = "sync.cfg"
+```
 
-# Defines the upstream repo this repo was forked from
-# Example: UPSTREAM="git@gitlab.com:mrlesmithjr/test-repo.git"
-UPSTREAM = ""
+> NOTE: This could be useful in scenarios where you might be leveraging this
+> repo as a submodule to use across projects and each project should be configured
+> differently. You can easily include a `sync.cfg` in a parent directory and
+> change the path in the script.
+
+### Configure [sync.cfg](sync.cfg)
+
+Define `LOG_FILE`  to reflect the location of the log file to use for
+logging. The default is set to `sync-repo.log`.
+
+Define `UPSTREAM` to reflect your respective upstream repo for your
+fork.
+
+Define `UPSTREAM_BRANCH` to reflect your respective upstream repo's
+branch to sync with.
+
+```bash
+[defaults]
+# Define the log file location
+LOG_FILE = sync-repo.log
+
+# Example: UPSTREAM = git@gitlab.com:mrlesmithjr/test-repo.git
+UPSTREAM =
 
 # Defines the upstream branch to sync with. Important for those that are not
 # by default master.
-UPSTREAM_BRANCH = "master"
+UPSTREAM_BRANCH = master
 ```
 
 ## Usage
