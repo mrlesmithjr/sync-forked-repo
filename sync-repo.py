@@ -36,12 +36,15 @@ def main():
 
     parser = SafeConfigParser()
 
+    # Defines actual path to where sync_config should be found
+    sync_config_path = os.path.join(script_dir, sync_config)
+
     # Check to ensure sync_config exists.
-    if os.path.exists(os.path.join(script_dir, sync_config)):
-        parser.read(os.path.join(script_dir, sync_config))
+    if os.path.exists(sync_config_path):
+        parser.read(sync_config_path)
     else:
         logger.error("Configuration %s missing, please fix sync_config path."
-            % os.path.join(script_dir, sync_config))
+            % sync_config_path)
         sys.exit(0)
 
     # Defines the log file name and location of where to log to
