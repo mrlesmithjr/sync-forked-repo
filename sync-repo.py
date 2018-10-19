@@ -247,7 +247,10 @@ def stash_pop_changes(logger, repo, stashed_changes):
     """Pop all stashed changes to ensure any existing changes are not lost."""
     if stashed_changes is True:
         logger.info("Popping any stashed entries.")
-        repo.git.stash('pop')
+        try:
+            repo.git.stash('pop')
+        except:
+            pass
 
 
 def sync_origin(logger, repo, current_branch, UPSTREAM_BRANCH):
