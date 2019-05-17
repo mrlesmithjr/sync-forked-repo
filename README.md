@@ -1,3 +1,20 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
+
+- [sync-forked-repo](#sync-forked-repo)
+  - [Why](#why)
+  - [Requirements](#requirements)
+    - [Configure `sync.cfg` In Script](#configure-synccfg-in-script)
+    - [Configure sync.cfg](#configure-synccfg)
+  - [Usage](#usage)
+    - [Submodule Info](#submodule-info)
+  - [License](#license)
+  - [Author Information](#author-information)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # sync-forked-repo
 
 This repo is for syncing forked repos with their respective upstream repo. The
@@ -28,7 +45,7 @@ sync_config = "sync.cfg"
 
 ### Configure [sync.cfg](sync.cfg)
 
-Define `LOG_FILE`  to reflect the location of the log file to use for
+Define `LOG_FILE` to reflect the location of the log file to use for
 logging. The default is set to `sync-repo.log`.
 
 Define `UPSTREAM` to reflect your respective upstream repo for your
@@ -74,6 +91,6 @@ MIT
 
 Larry Smith Jr.
 
--   [EverythingShouldBeVirtual](http://everythingshouldbevirtual.com)
--   [@mrlesmithjr](https://www.twitter.com/mrlesmithjr)
--   <mailto:mrlesmithjr@gmail.com>
+- [EverythingShouldBeVirtual](http://everythingshouldbevirtual.com)
+- [@mrlesmithjr](https://www.twitter.com/mrlesmithjr)
+- [mrlesmithjr@gmail.com](mailto:mrlesmithjr@gmail.com)
