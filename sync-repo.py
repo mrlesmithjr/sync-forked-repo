@@ -188,7 +188,7 @@ def commit_changes(logger, repo, current_branch, UPSTREAM_BRANCH):
         repo.git.checkout(current_branch.name)
         logger.info("Rebasing with local %s to include any changes." %
                     UPSTREAM_BRANCH)
-        repo.git.rebase(UPSTREAM_BRANCH)
+        repo.git.rebase('--no-ff', UPSTREAM_BRANCH)
 
 
 def get_status(logger, repo):
@@ -284,7 +284,7 @@ def sync_upstream(logger, repo, current_branch, UPSTREAM_BRANCH):
         repo.git.checkout(UPSTREAM_BRANCH)
         logger.info("%s branch checked out." % UPSTREAM_BRANCH)
     logger.info("Merging with upstream/%s..." % UPSTREAM_BRANCH)
-    repo.git.merge('upstream/%s' % UPSTREAM_BRANCH)
+    repo.git.merge('--no-ff', 'upstream/%s' % UPSTREAM_BRANCH)
     logger.info("Any changes from upstream/%s merged." % UPSTREAM_BRANCH)
 
 
